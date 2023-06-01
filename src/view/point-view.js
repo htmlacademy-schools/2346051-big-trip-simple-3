@@ -1,48 +1,42 @@
 import {createElement} from '../render.js';
-import { convertToEventDateTime, convertToEventDate, convertToDateTime, convertToTime,convertToUpperCase } from '../utils.js';
-import { getCityNameById } from '../mock/destination.js';
-import { getOfferName, getOfferPrice } from '../mock/const.js';
+import { convertToEventDateTime, convertToEventDate, convertToDateTime, convertToTime, capitalizeType, getItemFromItemsById } from '../utils.js';
+import { destinations } from '../mock/destination.js';
+import { getOfferById } from '../mock/offers.js';
 
-function createOffersTemplate(offers) {
-  return offers.map((offer) => `
-    <li class="event__offer">
-      <span class="event__offer-title">${getOfferName(offer)}</span>
-      &plus;&euro;&nbsp;
-      <span class="event__offer-price">${getOfferPrice(offer)}</span>
-    </li>
-  `).join('');
+function createOffersTemplate(offersIDs, type) {
+  return offersIDs.map((offerID) => {
+    const offer = getOfferById(offerID, type);
+    return `<li class="event__offer">
+        <span class="event__offer-title">${offer.title}</span>
+         &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offer.price}</span>
+      </li>`;
+  }).join('');
 }
 
-function createEventItemTemplate(eventPoint) {
-  const {basePrice, dateFrom, dateTo, destination, offers, type} = eventPoint;
-  const eventDateTime = convertToEventDateTime(dateFrom);
-  const eventDate = convertToEventDate(dateFrom);
-  const fromDateTime = convertToDateTime(dateFrom);
-  const fromTime = convertToTime(dateFrom);
-  const toDateTime = convertToDateTime(dateTo);
-  const toTime = convertToTime(dateTo);
-  const offersTemplate = createOffersTemplate(offers);
+function createTripPointTemplate(tripPoint) {
+  const destination = getItemFromItemsById(destinations, tripPoint.destination);
   return (
     `<li class="trip-events__item">
     <div class="event">
-      <time class="event__date" datetime="${eventDateTime}">${eventDate}</time>
+      <time class="event__date" datetime="${convertToEventDateTime(tripPoint.dateFrom)}">${convertToEventDate(tripPoint.dateFrom)}</time>
       <div class="event__type">
-        <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
+        <img class="event__type-icon" width="42" height="42" src="img/icons/${tripPoint.type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${convertToUpperCase(type)} ${getCityNameById(destination)}</h3>
+      <h3 class="event__title">${capitalizeType(tripPoint.type)} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${fromDateTime}">${fromTime}</time>
+          <time class="event__start-time" datetime="${convertToDateTime(tripPoint.dateFrom)}">${convertToTime(tripPoint.dateFrom)}</time>
           &mdash;
-          <time class="event__end-time" datetime="${toDateTime}">${toTime}</time>
+          <time class="event__end-time" datetime="${convertToDateTime(tripPoint.dateTo)}">${convertToTime(tripPoint.dateTo)}</time>
         </p>
       </div>
       <p class="event__price">
-        &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
+        &euro;&nbsp;<span class="event__price-value">${tripPoint.basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
-        ${offersTemplate}
+        ${createOffersTemplate(tripPoint.offersIDs, tripPoint.type)}
       </ul>
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
@@ -53,20 +47,23 @@ function createEventItemTemplate(eventPoint) {
 }
 
 export default class PointView {
+  #element = null;
+  #tripPoint = null;
+
   constructor({tripPoint}) {
-    this.tripPoint = tripPoint;
+    this.#tripPoint = tripPoint;
   }
 
-  getTemplate() {
-    return createEventItemTemplate(this.tripPoint);
+  get template() {
+    return createTripPointTemplate(this.#tripPoint);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
