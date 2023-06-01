@@ -1,36 +1,41 @@
-import { getCityDescriptionById, getCityPicById, getCityNameById } from '../mock/destination.js';
-import { getRandomPoint } from '../mock/point.js';
+import { destinations } from '../mock/destination.js';
 import {createElement} from '../render.js';
-import { convertToFormDate, convertToUpperCase } from '../utils.js';
-import { getOfferName, getOfferPrice } from '../mock/const.js';
+import { convertToFormDate, capitalizeType, getItemFromItemsById } from '../utils.js';
+import { getOffersByType } from '../mock/const.js';
 
 
-function createOffersTemplate(offers) {
-  return offers.map((offer) => `
+function createOffersTemplate(offers, type) {
+  return getOffersByType(type).map((offer) => {
+    const isOfferChecked = offers.includes(offer.id) ? 'checked' : '';
+    return `
     <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${isOfferChecked}>
       <label class="event__offer-label" for="event-offer-luggage-1">
-        <span class="event__offer-title">${getOfferName(offer)}</span>
+        <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
-        <span class="event__offer-price">${getOfferPrice(offer)}</span>
+        <span class="event__offer-price">${offer.price}</span>
       </label>
-    </div>
+    </div>`;
+  }).join('');
+}
+
+function createDestinationPicsTemplate(destination) {
+  return destination.pictures.map((pic) => `
+    <img class="event__photo" src="${pic.src}" alt="${pic.description}">
   `).join('');
 }
 
-function createEventItemFormTemplate() {
-  const tripPoint = getRandomPoint();
-  const {dateFrom, destination, offers, type} = tripPoint;
-  const date = convertToFormDate(dateFrom);
-  const offersTemplate = createOffersTemplate(offers);
-  const visibility = offers.length === 0 ? 'visually-hidden' : '';
+function createFormTemplate(tripPoint) {
+  const visibility = tripPoint.offersIDs.length === 0 ? 'visually-hidden' : '';
+  const destination = getItemFromItemsById(destinations, tripPoint.destination);
   return (
-    `<form class="event event--edit" action="#" method="post">
+    `<li class="trip-events__item">
+    <form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
           <span class="visually-hidden">Choose event type</span>
-          <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+          <img class="event__type-icon" width="17" height="17" src="img/icons/${tripPoint.type}.png" alt="${tripPoint.type} icon">
         </label>
         <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
         <div class="event__type-list">
@@ -77,9 +82,9 @@ function createEventItemFormTemplate() {
       </div>
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
-          ${convertToUpperCase(type)}
+          ${capitalizeType(tripPoint.type)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${getCityNameById(destination)}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
         <datalist id="destination-list-1">
           <option value="Amsterdam"></option>
           <option value="Geneva"></option>
@@ -88,10 +93,10 @@ function createEventItemFormTemplate() {
       </div>
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${date} 00:00">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${convertToFormDate(tripPoint.dateFrom)} 00:00">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${date} 00:00">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${convertToFormDate(tripPoint.dateFrom)} 00:00">
       </div>
       <div class="event__field-group  event__field-group--price">
         <label class="event__label" for="event-price-1">
@@ -107,34 +112,42 @@ function createEventItemFormTemplate() {
       <section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers ${visibility}">Offers</h3>
         <div class="event__available-offers">
-          ${offersTemplate}
+          ${createOffersTemplate(tripPoint.offersIDs, tripPoint.type)}
         </div>
       </section>
       <section class="event__section  event__section--destination">
         <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">${getCityDescriptionById(destination)}</p>
+        <p class="event__destination-description">${destination.description}</p>
         <div class="event__photos-container">
           <div class="event__photos-tape">
-            <img class="event__photo" src="${getCityPicById(destination)}" alt="Event photo">
+            ${createDestinationPicsTemplate(destination)}
           </div>
         </div>
       </section>
     </section>
-  </form>`
+  </form>
+  </li>`
   );
 }
 
-export default class NewItemFormView {
-  getTemplate() {
-    return createEventItemFormTemplate();
+export default class CreateFormView {
+  #element = null;
+  #tripPoint = null;
+
+  constructor(tripPoint) {
+    this.#tripPoint = tripPoint;
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get template() {
+    return createFormTemplate(this.#tripPoint);
+  }
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
