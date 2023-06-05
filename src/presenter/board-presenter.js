@@ -11,10 +11,12 @@ export default class BoardPresenter {
   #boardContainer = null;
   #tripPointsModel = null;
   #eventListComponent = null;
+  #sorters = null;
 
-  constructor({boardContainer, tripPointsModel}) {
+  constructor({boardContainer, tripPointsModel, sorters}) {
     this.#boardContainer = boardContainer;
     this.#tripPointsModel = tripPointsModel;
+    this.#sorters = sorters;
   }
 
   init() {
@@ -23,7 +25,7 @@ export default class BoardPresenter {
       render(new NoPointsView(), this.#boardContainer);
     } else {
       this.#eventListComponent = new PointsListView();
-      render(new SortView(), this.#boardContainer);
+      render(new SortView(this.#sorters), this.#boardContainer);
       render(this.#eventListComponent, this.#boardContainer);
 
       render(new CreationFormView(tripPoints[0]), this.#eventListComponent.element);
