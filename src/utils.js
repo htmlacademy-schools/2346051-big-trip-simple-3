@@ -28,7 +28,7 @@ const isEscapeKey = (evt) => evt.key === 'Escape';
 
 const convertToEventDateTime = (date) => date.substring(0, date.indexOf('T'));
 const convertToEventDate = (date) => dayjs(date).format(EVENT_DATE_FORMAT);
-const convertToDateTime = (date) => date.substring(0, date.indexOf('.'));
+const convertToDateTime = (date) => date.substring(0, date.lastIndexOf(':'));
 const convertToTime = (date) => dayjs(date).format(TIME_FORMAT);
 const convertToBasicime = (date) => dayjs(date).format(BASIC_DATE_FORMAT);
 const capitalizeType = (type) => type.charAt(0).toUpperCase() + type.slice(1);
