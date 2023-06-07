@@ -5,7 +5,7 @@ import AbstractView from '../framework/view/abstract-view.js';
 
 function createOffersTemplate(offersIDs, type) {
   return offersIDs.map((offerID) => {
-    const offer = getOfferById(offerID, type);
+    const offer = getOfferById(type, offerID);
     return `<li class="event__offer">
         <span class="event__offer-title">${offer.title}</span>
          &plus;&euro;&nbsp;
@@ -48,7 +48,6 @@ function createTripPointTemplate(tripPoint) {
 
 export default class PointView extends AbstractView {
   #tripPoint = null;
-  #handleEditClick = null;
 
   constructor({tripPoint, onEditClick}) {
     super();
