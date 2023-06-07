@@ -1,11 +1,13 @@
 import { convertToBasicime, getItemFromItemsById, capitalizeType } from '../utils.js';
 import { pointTypes } from '../mock/const';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.css';
 
 const BLANK_POINT = {
-  basePrice: 666666,
+  basePrice: 1234,
   dateFrom: '2066-06-16T16:16:16.375Z',
-  dateTo: '2066-06-16T16:16:16.375Z',
+  dateTo: '2066-06-16T16:20:00.375Z',
   destination: undefined,
   id: 0,
   offersIDs: [],
@@ -128,6 +130,8 @@ export default class EditForm extends AbstractStatefulView {
   #isEditForm = null;
   #destinations = [];
   #offers = [];
+  #fromDatepicker = null;
+  #toDatepicker = null;
 
   static parsePointToState(point, offers) {
     return {
@@ -169,6 +173,23 @@ export default class EditForm extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationHandler);
     this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersHandler);
+
+    this.#setFromDatePicker();
+    this.#setToDatePicker();
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#fromDatepicker) {
+      this.#fromDatepicker.destroy();
+      this.#fromDatepicker = null;
+    }
+
+    if (this.#toDatepicker) {
+      this.#toDatepicker.destroy();
+      this.#toDatepicker = null;
+    }
   }
 
   get template() {
@@ -183,7 +204,7 @@ export default class EditForm extends AbstractStatefulView {
 
   #submitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.onFormSubmit(EditForm.parseStateToPoint);
+    this._callback.onFormSubmit(EditForm.parseStateToPoint(this._state));
   };
 
   #rollUpButtonHandler = (evt) => {
@@ -227,5 +248,43 @@ export default class EditForm extends AbstractStatefulView {
       offersIDs: newOffersIds
     });
   };
+
+  #fromDateChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate.toISOString(),
+    });
+    this.#toDatepicker.set('minDate', userDate);
+  };
+
+  #toDateChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate.toISOString(),
+    });
+  };
+
+  #setFromDatePicker() {
+    this.#fromDatepicker = flatpickr(
+      this.element.querySelector(`#event-start-time-${this._state.id}`),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: convertToBasicime(this._state.dateFrom),
+        onChange: this.#fromDateChangeHandler,
+      },
+    );
+  }
+
+  #setToDatePicker() {
+    this.#toDatepicker = flatpickr(
+      this.element.querySelector(`#event-end-time-${this._state.id}`),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: convertToBasicime(this._state.dateTo),
+        minDate: convertToBasicime(this._state.dateFrom),
+        onChange: this.#toDateChangeHandler,
+      },
+    );
+  }
 
 }
