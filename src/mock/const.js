@@ -217,7 +217,7 @@ const SortType = {
   EVENT: 'event',
   TIME: 'time',
   PRICE: 'price',
-  OFFERS: 'offers'
+  OFFER: 'offer'
 };
 
 export { pointTypes, descriptionPhrases, namesOfPlaces, fromToDates, getOffersByType, offersByType, FilterType, SortType};

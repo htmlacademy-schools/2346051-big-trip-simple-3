@@ -4,6 +4,8 @@ import { render, RenderPosition } from '../framework/render';
 import CreationFormView from '../view/creation-form-view';
 import NoPointsView from '../view/no-points-view';
 import PointPresenter from '../presenter/point-presenter';
+import { SortType } from '../mock/const';
+import { sorts } from '../mock/sort';
 
 export default class BoardPresenter {
   #boardContainer = null;
@@ -13,6 +15,8 @@ export default class BoardPresenter {
   #pointPresenter = new Map();
   #pointsList = new PointsListView();
   #points = null;
+  #currentSortType = SortType.DAY;
+  #sourcedPoints = [];
 
   constructor({boardContainer, pointsModel}) {
     this.#boardContainer = boardContainer;
@@ -22,10 +26,12 @@ export default class BoardPresenter {
   init() {
     this.#points = [...this.#pointsModel.tripPoints];
     this.#renderBoard();
+    this.#sourcedPoints = [...this.#pointsModel.tripPoints];
   }
 
   #renderSort() {
     render(this.#sort, this.#boardContainer, RenderPosition.AFTERBEGIN);
+    this.#sort.setSortTypeChangeHandler(this.#handleSortTypeChange);
   }
 
   #renderNoPoint() {
@@ -65,5 +71,28 @@ export default class BoardPresenter {
     render(new CreationFormView(this.#points[0]), this.#pointsList.element);
     this.#renderPointsList();
   }
+
+  #clearPointList() {
+    this.#pointPresenter.forEach((presenter) => presenter.destroy());
+    this.#pointPresenter.clear();
+  }
+
+  #sortPoints(sortType) {
+    if (sorts[sortType]) {
+      this.#points.sort(sorts[sortType]);
+    } else {
+      this.#points = [...this.#sourcedPoints];
+    }
+    this.#currentSortType = sortType;
+  }
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+    this.#sortPoints(sortType);
+    this.#clearPointList();
+    this.#renderPointsList();
+  };
 
 }
