@@ -1,74 +1,69 @@
 import SortView from '../view/sort-view';
 import PointsListView from '../view/points-list-view';
-import PointView from '../view/point-view';
-import EditFormView from '../view/edit-form-view';
+import { render, RenderPosition } from '../framework/render';
 import CreationFormView from '../view/creation-form-view';
 import NoPointsView from '../view/no-points-view';
-import {render, replace} from '../framework/render.js';
-import { isEscapeKey } from '../utils';
+import PointPresenter from '../presenter/point-presenter';
 
 export default class BoardPresenter {
   #boardContainer = null;
-  #tripPointsModel = null;
-  #eventListComponent = null;
-  #sorters = null;
+  #pointsModel = null;
+  #noPoints = new NoPointsView();
+  #sort = new SortView();
+  #pointPresenter = new Map();
+  #pointsList = new PointsListView();
+  #points = null;
 
-  constructor({boardContainer, tripPointsModel, sorters}) {
+  constructor({boardContainer, pointsModel}) {
     this.#boardContainer = boardContainer;
-    this.#tripPointsModel = tripPointsModel;
-    this.#sorters = sorters;
+    this.#pointsModel = pointsModel;
   }
 
   init() {
-    const tripPoints = [...this.#tripPointsModel.tripPoints];
-    if (tripPoints.length === 0) {
-      render(new NoPointsView(), this.#boardContainer);
-    } else {
-      this.#eventListComponent = new PointsListView();
-      render(new SortView(this.#sorters), this.#boardContainer);
-      render(this.#eventListComponent, this.#boardContainer);
-
-      render(new CreationFormView(tripPoints[0]), this.#eventListComponent.element);
-
-      for (let i = 1; i < tripPoints.length - 1; i++) {
-        this.#renderTripPoint(tripPoints[i]);
-      }
-    }
+    this.#points = [...this.#pointsModel.tripPoints];
+    this.#renderBoard();
   }
 
-  #renderTripPoint(tripPoint) {
-    const ecsKeyDownHandler = (evt) => {
-      if (isEscapeKey(evt)) {
-        evt.preventDefault();
-        replaceFormToPoint();
-        document.body.removeEventListener('keydown', ecsKeyDownHandler);
-      }
-    };
-
-    const tripPointComponent = new PointView({
-      tripPoint,
-      onEditClick: () => {
-        replacePointToForm.call(this);
-        document.body.addEventListener('keydown', ecsKeyDownHandler);
-      }
-    });
-
-    const editFormComponent = new EditFormView({
-      tripPoint,
-      onFormSubmit: () => {
-        replaceFormToPoint.call(this);
-        document.body.removeEventListener('keydown', ecsKeyDownHandler);
-      }
-    });
-
-    function replacePointToForm() {
-      replace(editFormComponent, tripPointComponent);
-    }
-
-    function replaceFormToPoint() {
-      replace(tripPointComponent, editFormComponent);
-    }
-
-    render(tripPointComponent, this.#eventListComponent.element);
+  #renderSort() {
+    render(this.#sort, this.#boardContainer, RenderPosition.AFTERBEGIN);
   }
+
+  #renderNoPoint() {
+    render(this.#noPoints, this.#boardContainer, RenderPosition.AFTERBEGIN);
+  }
+
+  #renderPointsList() {
+    render(this.#pointsList, this.#boardContainer);
+    this.#renderPoints();
+  }
+
+  #renderHandleModeChange = () => {
+    this.#pointPresenter.forEach((presenter) => presenter.resetView());
+  };
+
+  #renderPoint(point) {
+    const pointPresenter = new PointPresenter({
+      pointList: this.#pointsList.element,
+      onModeChange: this.#renderHandleModeChange
+    });
+    pointPresenter.init(point);
+    this.#pointPresenter.set(point.id, pointPresenter);
+  }
+
+  #renderPoints() {
+    this.#points.forEach((point) => this.#renderPoint(point));
+  }
+
+  #renderBoard() {
+    if (this.#points.length === 0) {
+      render(this.#renderNoPoint, this.#boardContainer);
+      return;
+    }
+
+    this.#renderSort();
+
+    render(new CreationFormView(this.#points[0]), this.#pointsList.element);
+    this.#renderPointsList();
+  }
+
 }
