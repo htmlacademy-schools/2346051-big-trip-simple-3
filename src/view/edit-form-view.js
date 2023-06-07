@@ -129,7 +129,7 @@ export default class EditFormView extends AbstractView {
   constructor({tripPoint, onFormSubmit}) {
     super();
     this.#tripPoint = tripPoint;
-    this.#handleFormSubmit = onFormSubmit;
+    this._callback.onFormSubmit = onFormSubmit;
 
     this.element.querySelector('.event--edit')
       .addEventListener('submit', this.#submitHandler);
@@ -143,6 +143,6 @@ export default class EditFormView extends AbstractView {
 
   #submitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this._callback.onFormSubmit();
   };
 }

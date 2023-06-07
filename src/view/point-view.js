@@ -53,7 +53,7 @@ export default class PointView extends AbstractView {
   constructor({tripPoint, onEditClick}) {
     super();
     this.#tripPoint = tripPoint;
-    this.#handleEditClick = onEditClick;
+    this._callback.onEditClick = onEditClick;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   }
 
@@ -63,6 +63,6 @@ export default class PointView extends AbstractView {
 
   #editClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleEditClick();
+    this._callback.onEditClick();
   };
 }
