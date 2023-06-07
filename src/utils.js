@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 const EVENT_DATE_FORMAT = 'MMM D';
 const TIME_FORMAT = 'H:mm';
 const FORM_DATE_FORMAT = 'DD/MM/YY';
-const BASIC_DATE_FORMAT = 'DD/MM/YY H:mm';
+const BASIC_DATE_FORMAT = 'DD/MM/YY HH:mm';
 
 const getItemFromItemsById = (items, id) => (items.find((item) => item.id === id));
 
@@ -34,5 +34,9 @@ const convertToBasicime = (date) => dayjs(date).format(BASIC_DATE_FORMAT);
 const capitalizeType = (type) => type.charAt(0).toUpperCase() + type.slice(1);
 const convertToFormDate = (date) => dayjs(date).format(FORM_DATE_FORMAT);
 
+const updatePoint = (items, update) => items.map((item) => item.id === update.id ? update : item);
+
+const makeFirstLetterUpperCase = (word) => word.charAt(0).toUpperCase() + word.slice(1);
+
 const isTripDateBeforeToday = (date) => dayjs(date).isBefore(dayjs(), 'D') || dayjs(date).isSame(dayjs(), 'D');
-export {getRandomItemFromItems, getRandomPrice, getRandomId, convertToEventDateTime, convertToEventDate, convertToDateTime, convertToTime, capitalizeType, convertToFormDate, createIDgenerator, getRandomSliceFromItems, getItemFromItemsById, convertToBasicime, isEscapeKey, isTripDateBeforeToday};
+export {getRandomItemFromItems, getRandomPrice, getRandomId, convertToEventDateTime, convertToEventDate, convertToDateTime, convertToTime, capitalizeType, convertToFormDate, createIDgenerator, getRandomSliceFromItems, getItemFromItemsById, convertToBasicime, isEscapeKey, isTripDateBeforeToday, updatePoint, makeFirstLetterUpperCase};

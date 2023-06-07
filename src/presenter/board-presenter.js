@@ -1,11 +1,12 @@
 import SortView from '../view/sort-view';
 import PointsListView from '../view/points-list-view';
 import { render, RenderPosition } from '../framework/render';
-import CreationFormView from '../view/creation-form-view';
 import NoPointsView from '../view/no-points-view';
 import PointPresenter from '../presenter/point-presenter';
 import { SortType } from '../mock/const';
 import { sorts } from '../mock/sort';
+import { updatePoint } from '../utils';
+import EditForm from '../view/edit-form-view';
 
 export default class BoardPresenter {
   #boardContainer = null;
@@ -17,16 +18,24 @@ export default class BoardPresenter {
   #points = null;
   #currentSortType = SortType.DAY;
   #sourcedPoints = [];
+  #offers = [];
+  #destinations = [];
+  #modelOffers = null;
+  #modelDestinations = null;
 
-  constructor({boardContainer, pointsModel}) {
+  constructor({boardContainer, pointsModel, modelOffers, modelDestinations}) {
     this.#boardContainer = boardContainer;
     this.#pointsModel = pointsModel;
+    this.#modelOffers = modelOffers;
+    this.#modelDestinations = modelDestinations;
   }
 
   init() {
     this.#points = [...this.#pointsModel.tripPoints];
-    this.#renderBoard();
     this.#sourcedPoints = [...this.#pointsModel.tripPoints];
+    this.#offers = [...this.#modelOffers.offers];
+    this.#destinations = [...this.#modelDestinations.destinations];
+    this.#renderBoard();
   }
 
   #renderSort() {
@@ -40,7 +49,7 @@ export default class BoardPresenter {
 
   #renderPointsList() {
     render(this.#pointsList, this.#boardContainer);
-    this.#renderPoints();
+    this.#points.forEach((point) => this.#renderPoint(point));
   }
 
   #renderHandleModeChange = () => {
@@ -50,14 +59,13 @@ export default class BoardPresenter {
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({
       pointList: this.#pointsList.element,
-      onModeChange: this.#renderHandleModeChange
+      offers: this.#offers,
+      destinations: this.#destinations,
+      onDataChange: this.#handlePointChange,
+      onModeChange: this.#renderHandleModeChange,
     });
-    pointPresenter.init(point);
+    pointPresenter.init(point, this.#destinations, this.#offers);
     this.#pointPresenter.set(point.id, pointPresenter);
-  }
-
-  #renderPoints() {
-    this.#points.forEach((point) => this.#renderPoint(point));
   }
 
   #renderBoard() {
@@ -68,7 +76,11 @@ export default class BoardPresenter {
 
     this.#renderSort();
 
-    render(new CreationFormView(this.#points[0]), this.#pointsList.element);
+    render(new EditForm({
+      destinations: this.#destinations,
+      offers: this.#offers,
+      isEditForm: false
+    }), this.#pointsList.element);
     this.#renderPointsList();
   }
 
@@ -93,6 +105,11 @@ export default class BoardPresenter {
     this.#sortPoints(sortType);
     this.#clearPointList();
     this.#renderPointsList();
+  };
+
+  #handlePointChange = (updatedPoint) => {
+    this.#points = updatePoint(this.#points, updatedPoint);
+    this.#pointPresenter.get(updatedPoint.id).init(updatedPoint, this.#destinations, this.#offers);
   };
 
 }
