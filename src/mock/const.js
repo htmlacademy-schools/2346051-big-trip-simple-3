@@ -13,12 +13,12 @@ const namesOfPlaces = [
 
 const fromToDates = [
   {
-    dateFrom: '2019-07-11T11:22:13.375Z',
-    dateTo: '2019-07-11T11:40:13.375Z'
+    dateFrom: '2023-07-11T11:22:13.375Z',
+    dateTo: '2023-07-11T11:40:13.375Z'
   },
   {
-    dateFrom: '2019-07-13T11:22:13.375Z',
-    dateTo: '2019-07-13T14:40:13.375Z'
+    dateFrom: '2020-07-13T11:22:13.375Z',
+    dateTo: '2020-07-13T14:40:13.375Z'
   },
   {
     dateFrom: '2019-07-10T11:22:13.375Z',
@@ -172,7 +172,12 @@ const offersByType = [
 
 const FilterType = {
   EVERYTHING: 'everything',
-  FUTURE: 'future'
+  FUTURE: 'future',
+};
+
+const FilterTypeDescriptions = {
+  [FilterType.EVERYTHING]: 'EVERYTHING',
+  [FilterType.FUTURE]: 'FUTURE',
 };
 
 const SortType = {
@@ -183,5 +188,24 @@ const SortType = {
   OFFER: 'offer'
 };
 
+const SortTypeDescription = {
+  [SortType.DAY]: 'Day',
+  [SortType.EVENT]: 'Event',
+  [SortType.TIME]: 'Time',
+  [SortType.PRICE]: 'Price',
+  [SortType.OFFER]: 'Offer'
+};
 
-export { pointTypes, descriptionPhrases, namesOfPlaces, fromToDates, offersByType, FilterType, SortType };
+const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export { pointTypes, descriptionPhrases, namesOfPlaces, fromToDates, offersByType, FilterType, SortType, UserAction, UpdateType, SortTypeDescription, FilterTypeDescriptions };

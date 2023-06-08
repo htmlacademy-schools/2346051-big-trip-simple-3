@@ -29,5 +29,4 @@ const generateDestinations = (n) => {
   }
 };
 
-
-export {generateDestinations, destinations};
+export { generateDestinations, destinations };

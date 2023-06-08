@@ -3,7 +3,6 @@ import AbstractView from '../framework/view/abstract-view.js';
 import { convertToFormDate, capitalizeType, getItemFromItemsById } from '../utils.js';
 import { getOffersByType } from '../mock/const.js';
 
-
 function createOffersTemplate(offers, type) {
   return getOffersByType(type).map((offer) => {
     const isOfferChecked = offers.includes(offer.id) ? 'checked' : '';
@@ -129,7 +128,6 @@ function createFormTemplate(tripPoint) {
   </li>`
   );
 }
-
 export default class CreationFormView extends AbstractView {
   #tripPoint = null;
 
