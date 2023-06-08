@@ -1,7 +1,6 @@
 import { offersByType } from './const';
 import { getRandomSliceFromItems } from '../utils';
 
-
 const getRandomOffersIdsByType = (type) => {
   const currentTypeRandomOffers = getRandomSliceFromItems(
     offersByType.find((currentOffers) => currentOffers.type === type).offers);
