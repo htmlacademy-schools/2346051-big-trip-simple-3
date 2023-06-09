@@ -24,7 +24,7 @@ export default class NewPointPresenter {
     this.#pointEditComponent = new EditForm({
       destinations: destinations,
       offers: offers,
-      onSubmit: this.#handleFormSubmit,
+      onFormSubmit: this.#handleFormSubmit,
       onDeleteClick: this.#handleDeleteClick,
       isEditForm: false
     });
