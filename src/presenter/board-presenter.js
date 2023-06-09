@@ -210,5 +210,4 @@ export default class BoardPresenter {
       this.#currentSortType = SortType.DAY;
     }
   }
-
 }
