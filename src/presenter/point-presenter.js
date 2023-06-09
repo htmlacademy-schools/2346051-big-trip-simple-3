@@ -2,7 +2,7 @@ import { render, replace, remove } from '../framework/render';
 import PointView from '../view/point-view';
 import EditForm from '../view/edit-form-view';
 import { isEscapeKey, isDatesEqual } from '../utils';
-import { UpdateType, UserAction } from '../mock/const';
+import { UpdateType, UserAction } from '../const';
 
 const Mode = {
   DEFAULT: 'DEFAULT',

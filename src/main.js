@@ -1,31 +1,33 @@
 import BoardPresenter from './presenter/board-presenter.js';
 import ModelPoint from './model/model-point.js';
-import { mockInit, tripPoints } from './mock/point.js';
 import ModelOffers from './model/offers-model';
 import ModelDestinations from './model/destination-model';
-import { offersByType } from './mock/const';
-import { destinations } from './mock/destination';
 import ModelFilters from './model/filter-model';
 import FilterPresenter from './presenter/filter-presenter';
 import NewPointButtonView from './view/new-point-button-view';
 import { render } from './render';
+import PointsApiService from './points-api-service.js';
 
 const pageContainer = document.querySelector('.trip-events');
 const siteFilterElement = document.querySelector('.trip-controls__filters');
 const placeForButton = document.querySelector('.trip-main');
 
-mockInit(4, 10);
+const AUTHORIZATION = 'Basic jdurbfsh523';
+const END_POINT = 'https://18.ecmascript.pages.academy/big-trip';
 
-const modelPoints = new ModelPoint(tripPoints);
-const modelOffers = new ModelOffers(offersByType);
-const modelDestinations = new ModelDestinations(destinations);
+const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
+
+const modelPoints = new ModelPoint({pointsApiService});
+const modelOffers = new ModelOffers({pointsApiService});
+const modelDestinations = new ModelDestinations({pointsApiService});
 const modelFilter = new ModelFilters();
+
 const boardPresenter = new BoardPresenter({
   boardContainer: pageContainer,
   pointsModel: modelPoints,
-  modelOffers,
+  modelOffers: modelOffers,
   modelDestinations: modelDestinations,
-  modelFilter,
+  modelFilter: modelFilter,
   onNewPointDestroy: handleNewTaskFormClose
 });
 
@@ -53,3 +55,7 @@ render(newPointButtonComponent, placeForButton);
 filterPresenter.init();
 
 boardPresenter.init();
+modelPoints.init()
+  .finally(() => {
+    render(newPointButtonComponent, placeForButton);
+  });

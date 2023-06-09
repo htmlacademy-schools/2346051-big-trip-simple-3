@@ -1,8 +1,9 @@
 import { convertToBasicTime, getItemFromItemsById, capitalizeType } from '../utils.js';
-import { pointTypes } from '../mock/const';
+import { pointTypes } from '../const';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
+import he from 'he';
 
 const BLANK_POINT = {
   basePrice: 1234,
@@ -76,7 +77,7 @@ function createEditFormTemplate(isEditForm, point, offers, destinations) {
         <label class="event__label  event__type-output" for="event-destination-${point.id}">
         ${capitalizeType(point.type)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-${point.id}" type="text" name="event-destination" value="${(destination) ? destination.name : ''}" list="destination-list-${point.id}" autocomplete="off">
+        <input class="event__input  event__input--destination" id="event-destination-${point.id}" type="text" name="event-destination" value="${(destination) ? he.encode(destination.name) : ''}" list="destination-list-${point.id}" autocomplete="off">
         <datalist id="destination-list-${point.id}">
           ${createDetinationListTemplate(destinations)}
         </datalist>
