@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { FilterType } from './mock/const';
+import { FilterType } from './const';
 
 const EVENT_DATE_FORMAT = 'MMM D';
 const TIME_FORMAT = 'H:mm';
@@ -42,7 +42,7 @@ const filter = {
   [FilterType.EVERYTHING]: (points) => points,
 };
 
-export {getRandomItemFromItems,
+export { getRandomItemFromItems,
   getRandomPrice,
   getRandomId,
   convertToEventDateTime,
@@ -57,4 +57,4 @@ export {getRandomItemFromItems,
   updatePoint,
   makeFirstLetterUpperCase,
   isDatesEqual,
-  filter};
+  filter };
