@@ -15,18 +15,25 @@ const BLANK_POINT = {
   type: 'taxi',
 };
 
+const getTitle = (isEditForm, isDeleting) => {
+  if (!isEditForm) {
+    return 'Cancel';
+  }
+  return (isDeleting) ? 'Deleting...' : 'Delete';
+};
+
 function createDetinationListTemplate(destinations) {
   return destinations.map((destination) => `
     <option value="${destination.name}"></option>`
   ).join('');
 }
 
-function createOffersTemplate(offersIDs, curTypeOffers, id) {
+function createOffersTemplate(offersIDs, curTypeOffers, id, isDisabled) {
   return curTypeOffers.map((offer) => {
     const isOfferChecked = offersIDs.includes(offer.id) ? 'checked' : '';
     return `
     <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title.split(' ').at(-1)}-${id}" type="checkbox" name="event-offer-${offer.title.split(' ').at(-1)}" ${isOfferChecked}>
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title.split(' ').at(-1)}-${id}" type="checkbox" name="event-offer-${offer.title.split(' ').at(-1)}" ${isOfferChecked} ${(isDisabled) ? 'disabled' : ''}>
       <label class="event__offer-label" for="event-offer-${offer.title.split(' ').at(-1)}-${id}">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
@@ -65,7 +72,7 @@ function createEditFormTemplate(isEditForm, point, offers, destinations) {
           <span class="visually-hidden">Choose event type</span>
           <img class="event__type-icon" width="17" height="17" src="img/icons/${point.type}.png" alt="${point.type}">
         </label>
-        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${point.id}" type="checkbox">
+        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${point.id}" type="checkbox" ${(point.isDisabled) ? 'disabled' : ''}>
         <div class="event__type-list">
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
@@ -77,27 +84,27 @@ function createEditFormTemplate(isEditForm, point, offers, destinations) {
         <label class="event__label  event__type-output" for="event-destination-${point.id}">
         ${capitalizeType(point.type)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-${point.id}" type="text" name="event-destination" value="${(destination) ? he.encode(destination.name) : ''}" list="destination-list-${point.id}" autocomplete="off">
+        <input class="event__input  event__input--destination" id="event-destination-${point.id}" type="text" name="event-destination" value="${(destination) ? he.encode(destination.name) : ''}" list="destination-list-${point.id}" autocomplete="off" ${(point.isDisabled) ? 'disabled' : ''}>
         <datalist id="destination-list-${point.id}">
           ${createDetinationListTemplate(destinations)}
         </datalist>
       </div>
       <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-${point.id}">From</label>
-      <input class="event__input  event__input--time" id="event-start-time-${point.id}" type="text" name="event-start-time" value="${convertToBasicTime(point.dateFrom)}">
+      <input class="event__input  event__input--time" id="event-start-time-${point.id}" type="text" name="event-start-time" value="${convertToBasicTime(point.dateFrom)}" ${(point.isDisabled) ? 'disabled' : ''}>
         &mdash;
         <label class="visually-hidden" for="event-end-time-${point.id}">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-${point.id}" type="text" name="event-end-time" value="${convertToBasicTime(point.dateFrom)}">
+        <input class="event__input  event__input--time" id="event-end-time-${point.id}" type="text" name="event-end-time" value="${convertToBasicTime(point.dateFrom)} ${(point.isDisabled) ? 'disabled' : ''}">
       </div>
       <div class="event__field-group  event__field-group--price">
         <label class="event__label" for="event-price-${point.id}">
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-${point.id}" type="number" name="event-price" value="${point.basePrice}">
+        <input class="event__input  event__input--price" id="event-price-${point.id}" type="number" name="event-price" value="${point.basePrice}" autocomplete="off" min="0" max="10000000" ${(point.isDisabled) ? 'disabled' : ''}">
       </div>
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">${(isEditForm) ? 'Delete' : 'Cancel'}</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit"${(point.isDisabled) ? 'disabled' : ''}>${(point.isSaving) ? 'Saving...' : 'Save'}</button>
+      <button class="event__reset-btn" type="reset" ${(point.isDisabled) ? 'disabled' : ''}>${getTitle(isEditForm, point.isDeleting)}</button>
        ${(isEditForm) ? `
        <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
@@ -108,7 +115,7 @@ function createEditFormTemplate(isEditForm, point, offers, destinations) {
       <section class="event__section  event__section--offers ${(curTypeOffers.length === 0) ? 'visually-hidden' : ''}">
         <h3 class="event__section-title  event__section-title--offers ${visibility}">Offers</h3>
         <div class="event__available-offers">
-          ${createOffersTemplate(point.offersIDs, curTypeOffers, point.id)}
+          ${createOffersTemplate(point.offersIDs, curTypeOffers, point.id, point.isDisabled)}
         </div>
       </section>
       <section class="event__section  event__section--destination ${(!destination) ? 'visually-hidden' : ''}">
@@ -137,13 +144,19 @@ export default class EditForm extends AbstractStatefulView {
   static parsePointToState(point, offers) {
     return {
       ...point,
-      curTypeOffers: offers.find((el) => el.type === point.type).offers
+      curTypeOffers: offers.find((el) => el.type === point.type).offers,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
     };
   }
 
   static parseStateToPoint(state) {
     const point = {...state};
     delete point.curTypeOffers;
+    delete point.isDisabled;
+    delete point.isSaving;
+    delete point.isDeleting;
     return point;
   }
 
@@ -254,16 +267,20 @@ export default class EditForm extends AbstractStatefulView {
   };
 
   #fromDateChangeHandler = ([userDate]) => {
-    this.updateElement({
-      dateFrom: userDate.toISOString(),
-    });
-    this.#toDatepicker.set('minDate', userDate);
+    if (userDate) {
+      this._setState({
+        dateFrom: userDate.toISOString(),
+      });
+      this.#toDatepicker.set('minDate', userDate);
+    }
   };
 
   #toDateChangeHandler = ([userDate]) => {
-    this.updateElement({
-      dateTo: userDate.toISOString(),
-    });
+    if (userDate) {
+      this._setState({
+        dateTo: userDate.toISOString(),
+      });
+    }
   };
 
   #setFromDatePicker() {
