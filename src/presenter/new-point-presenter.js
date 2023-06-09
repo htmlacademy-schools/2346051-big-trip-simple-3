@@ -3,7 +3,6 @@ import { UpdateType, UserAction } from '../const';
 import EditForm from '../view/edit-form-view';
 import { remove } from '../framework/render';
 import { isEscapeKey } from '../utils';
-import { nanoid } from 'nanoid';
 
 export default class NewPointPresenter {
   #handleDataChange = null;
@@ -36,6 +35,25 @@ export default class NewPointPresenter {
     document.body.addEventListener('keydown', this.#escKeyDownHandler);
   }
 
+  setSaving() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSavinf: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#pointEditComponent.shake(resetFormState);
+  }
+
   destroy() {
     if (this.#pointEditComponent === null) {
       return;
@@ -62,7 +80,7 @@ export default class NewPointPresenter {
       UserAction.ADD_POINT,
       UpdateType.MINOR,
 
-      {id: nanoid(), ...point}
+      this.#deleteId(point)
     );
 
     this.destroy();
@@ -70,5 +88,10 @@ export default class NewPointPresenter {
 
   #handleDeleteClick = () => {
     this.destroy();
+  };
+
+  #deleteId = (point) => {
+    delete point.id;
+    return point;
   };
 }
