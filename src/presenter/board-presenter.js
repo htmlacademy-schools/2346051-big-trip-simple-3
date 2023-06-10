@@ -35,11 +35,10 @@ export default class BoardPresenter {
     upperLimit: TimeLimit.UPPER_LIMIT
   });
 
-  constructor({boardContainer, pointsModel, modelOffers, modelDestinations, modelFilter, onNewPointDestroy}) {
+  constructor({boardContainer, pointsModel, modelOffers, modelFilter, onNewPointDestroy}) {
     this.#boardContainer = boardContainer;
     this.#pointsModel = pointsModel;
     this.#modelOffers = modelOffers;
-    this.#modelDestinations = modelDestinations;
     this.#modelFilter = modelFilter;
     this.#newPointPresenter = new NewPointPresenter({
       pointListContainer: this.#pointsList.element,
@@ -59,7 +58,7 @@ export default class BoardPresenter {
   }
 
   get destinations() {
-    return this.#modelDestinations.destinations;
+    return this.#pointsModel.destinations;
   }
 
   get offers() {
