@@ -1,7 +1,6 @@
 import BoardPresenter from './presenter/board-presenter.js';
 import ModelPoint from './model/model-point.js';
 import ModelOffers from './model/offers-model';
-import ModelDestinations from './model/destination-model';
 import ModelFilters from './model/filter-model';
 import FilterPresenter from './presenter/filter-presenter';
 import NewPointButtonView from './view/new-point-button-view';
@@ -16,17 +15,14 @@ const AUTHORIZATION = 'Basic jdurbfsh523';
 const END_POINT = 'https://18.ecmascript.pages.academy/big-trip';
 
 const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
-
-const modelPoints = new ModelPoint({pointsApiService});
 const modelOffers = new ModelOffers({pointsApiService});
-const modelDestinations = new ModelDestinations({pointsApiService});
+const modelPoints = new ModelPoint({pointsApiService});
 const modelFilter = new ModelFilters();
 
 const boardPresenter = new BoardPresenter({
   boardContainer: pageContainer,
   pointsModel: modelPoints,
   modelOffers: modelOffers,
-  modelDestinations: modelDestinations,
   modelFilter: modelFilter,
   onNewPointDestroy: handleNewTaskFormClose
 });
